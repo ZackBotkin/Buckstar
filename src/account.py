@@ -29,7 +29,7 @@ class Account:
 			elif int(order.quantity) > int(self.portfolio[order.symbol]):
 				print(
 					"Cannot sell %d shares. Portfolio only has %d shares" %
-					(order.quantity, self.portfolio[order.symbol])
+					(int(order.quantity), int(self.portfolio[order.symbol]))
 				)
 			else:
 				print ("Implement sell")
