@@ -1,37 +1,26 @@
+import pyodbc
+from sql_adapter import SqlAdapter
+from account import Account
 
 
+conn = pyodbc.connect(
+    'Driver={SQL Server};'
+    'Server=DESKTOP-C5KASSO;'
+    'Database=Test;'
+    'Trusted_Connection=yes;'
+)
 
-
-
-
-class Stock:
-
-    name = 'Apple'
-    price = 0.0
-
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
-
-
-
-
-class Account:
-
-    stocks = []
-    balance = 0.0
-
-    def __init__(self, balance):
-        self.balance = balance
-
-
-    def add_stock(self, stock):
-        stocks.add(stock)
 
 
 
 def main():
-    print("Ok")
+
+    cursor = conn.cursor()
+    sql_adapter = SqlAdapter(cursor)
+    account = Account(sql_adapter)
+
+    for item in account.account_info:
+        print(item)
 
 
 
