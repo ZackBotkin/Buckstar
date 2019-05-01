@@ -1,38 +1,50 @@
 
+from src.portfolio import Portfolio
 
 class Account:
 
-	def __init__(self, sql_adapter, name='ZackBot'):
+	def __init__(
+		self,
+		account_info= None,
+		portfolio=None,
+		data_source=None,
+		name= 'ZackBot'
+	):
 
-		self.sql_adapter = sql_adapter
-		self.account_info = sql_adapter.load_account_info(name)
+		self.name = name
+		self.data_source = data_source
 
-		self.name = self.account_info[0]
-		self.balance = self.account_info[1]
-
-		self.portfolio = sql_adapter.load_portfolio(name)
-
-
-	def commit_transaction(self, order):
-
-		if order.action == 'buy':
-			## TODO : need to look up cost and make sure it doesnt exceeed
-			## liquid assets in portfolio
-			self.sql_adapter.buy_order(order.action, order.quantity)
-
-		elif order.action == 'sell':
-			if order.symbol not in self.portfolio:
-				print(
-					"Cannot sell %s. Portfolio does not have this asset!"
-					% order.symbol
-				)
-			elif int(order.quantity) > int(self.portfolio[order.symbol]):
-				print(
-					"Cannot sell %d shares. Portfolio only has %d shares" %
-					(int(order.quantity), int(self.portfolio[order.symbol]))
-				)
+		if account_info is None:
+			if self.data_source is None:
+				raise Exception('Need a data source if no account info passed in')
 			else:
-				print ("Implement sell")
-
+				self.account_info = self.data_source.load_account_data(self.name)
 		else:
-			raise Exception('Not a buy or sell')
+			self.account_info = account_info
+
+		if portfolio is None:
+			if self.data_source is None:
+				raise Exception('Need a data source if no portfolio provided')
+			else:
+				self.portfolio = Portfolio(self.name, self.data_source)
+		else:
+			self.portfolio = portfolio
+
+
+	def _can_buy(self, order):
+		return True
+
+	def buy(self, order):
+		if self._can_buy(order):
+			self.portfolio.update(order)
+		else:
+			raise Exception('Invalid buy order')
+
+	def _can_sell(self, order):
+		return True
+
+	def sell(self, order):
+		if self._can_sell(order):
+			self.portfolio.update(order)
+		else:
+			raise Exception('Invalid sell order')

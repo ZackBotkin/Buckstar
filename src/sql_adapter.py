@@ -29,24 +29,39 @@ class SqlAdapter:
 		self.cursor = self.conn.cursor()
 
 
-	def load_account_info(self, account_name):
+	def load_account_data(self, account_name):
 		account_info = self.cursor.execute(
 			'SELECT * FROM %s WHERE AccountName=\'%s\'' %
 			(self.ACCOUNT_TABLE, account_name)
 		)
 		return account_info.fetchone()
 
-	def load_portfolio(self, account_name):
+	def load_portfolio_data(self, account_name):
 		raw_portfolio = self.cursor.execute(
-			'SELECT * FROM %s WHERE AccountName=\'%s\'' %
+			'SELECT Symbol,Quantity FROM %s WHERE AccountName=\'%s\'' %
 			(self.PORTFOLIO_TABLE, account_name)
 		)
 		portfolio = {}
-		for row in raw_portfolio.fetchmany():
-			if (row[1] not in portfolio):
-				portfolio[row[1]] = row[2]
+		for row in raw_portfolio:
+			if (row[0] not in portfolio):
+				portfolio[row[0]] = row[1]
 
 		return portfolio
+
+
+	def buy_initial(self, account_name, quantity, symbol):
+		self.cursor.execute(
+			"INSERT INTO %s (AccountName, Symbol, Quantity) VALUES (\'%s\',\'%s\',%d)" %
+			(self.PORTFOLIO_TABLE, account_name, str(symbol), int(quantity))
+		)
+		self.conn.commit()
+
+	def buy_more(self, account_name, quantity, symbol):
+		self.cursor.execute(
+			"UPDATE %s SET Symbol=\'%s\',Quantity=%d WHERE AccountName=\'%s\'" %
+			(self.PORTFOLIO_TABLE, symbol, int(quantity), account_name)
+		)
+		self.conn.commit()
 
 	def update_account(self, account_name, new_balance):
 		self.cursor.execute(

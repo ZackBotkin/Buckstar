@@ -11,7 +11,7 @@ def get_args():
 
     parser.add_argument(
         "action",
-        choices=['buy', 'sell']
+        choices=['buy', 'sell', 'review']
     )
 
     parser.add_argument(
@@ -28,17 +28,17 @@ def main():
 
     args = get_args()
 
-    sql_adapter = SqlAdapter()
-    account = Account(sql_adapter)
+    data_source = SqlAdapter()
+    account = Account(name= 'ZackBot', data_source= data_source)
 
-    account.commit_transaction(
-        Order(
-            args.action,
-            args.symbol,
-            args.quantity
-        )
-    )
-
+    if args.action == 'buy':
+        account.buy(Order(args.action, args.symbol, int(args.quantity)))
+    elif args.action == 'sell':
+        account.sell(Order(args.action, args.symbol, int(args.quantity)))
+    elif args.action == 'review':
+        account.portfolio.get_value()
+    else:
+        raise Exception('Unknown action type %s' % args.action)
 
 if __name__ == '__main__':
     main()
